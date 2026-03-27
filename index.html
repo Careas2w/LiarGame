@@ -9,7 +9,6 @@
       --bg1:#0f172a;
       --bg2:#111827;
       --card:#1e293b;
-      --card2:#243447;
       --line:rgba(255,255,255,.08);
       --text:#f8fafc;
       --muted:#cbd5e1;
@@ -60,19 +59,12 @@
     h3{ font-size:18px; margin-bottom:8px; }
     .sub{ color:var(--muted); margin-bottom:20px; line-height:1.5; }
 
-    .grid{
-      display:grid;
-      gap:14px;
-    }
-
-    .grid-2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-    }
+    .grid{ display:grid; gap:14px; }
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
 
     @media (max-width:720px){
-      .grid-2{ grid-template-columns:1fr; }
+      .grid-2, .grid-3{ grid-template-columns:1fr; }
     }
 
     label{
@@ -164,7 +156,7 @@
 
     .word-box{
       margin-top:16px;
-      min-height:120px;
+      min-height:150px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -172,10 +164,12 @@
       border-radius:20px;
       border:1px dashed rgba(255,255,255,.12);
       background:rgba(15,23,42,.85);
-      padding:22px;
-      font-size:clamp(24px,4vw,40px);
+      padding:24px;
+      font-size:clamp(34px,6vw,64px);
       font-weight:900;
       letter-spacing:.02em;
+      line-height:1.15;
+      word-break:break-word;
     }
 
     .small{
@@ -196,8 +190,6 @@
       margin-bottom:8px;
     }
 
-    .status-ok{ color:#86efac; }
-    .status-warn{ color:#fcd34d; }
     .status-bad{ color:#fca5a5; }
 
     .footer-note{
@@ -205,6 +197,21 @@
       color:var(--muted);
       font-size:13px;
       margin-top:2px;
+    }
+
+    .password-wrap{ position:relative; }
+    .password-wrap input{ padding-right:108px; }
+    .toggle-password{
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      width:auto;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#334155;
+      color:#fff;
+      font-size:14px;
     }
   </style>
 </head>
@@ -217,7 +224,10 @@
       <div class="grid">
         <div>
           <label>Clave de acceso</label>
-          <input id="accessPassword" type="password" placeholder="Introduce la clave" />
+          <div class="password-wrap">
+            <input id="accessPassword" type="password" placeholder="Introduce la clave" />
+            <button type="button" class="toggle-password" id="btnTogglePassword">Mostrar</button>
+          </div>
         </div>
         <button class="btn-primary" id="btnAccess">Entrar</button>
         <p id="authError" class="small status-bad hidden"></p>
@@ -307,9 +317,9 @@
       <div class="topbar">
         <div>
           <h2>Lobby</h2>
-          <p class="sub">Los jugadores pueden unirse durante 3 minutos desde que se crea la sala.</p>
+          <p class="sub">Los jugadores pueden unirse durante 6 minutos desde que se crea la sala.</p>
         </div>
-        <div class="pill">⏳ Tiempo restante: <span id="lobbyTimer">180</span>s</div>
+        <div class="pill">⏳ Tiempo restante: <span id="lobbyTimer">360</span>s</div>
       </div>
 
       <div class="grid-2">
@@ -323,6 +333,7 @@
           <div class="tag" id="roomThemeTag">Tema: -</div>
           <div class="tag" id="roomLangTag">Idioma: -</div>
           <div class="tag" id="roomHostTag">Host: -</div>
+          <div class="tag" id="roomRoundTag">Ronda: 0</div>
           <div class="small" style="margin-top:8px;">
             Cuando empiece la partida, cada jugador verá su palabra en su propio móvil.
           </div>
@@ -343,19 +354,40 @@
     </div>
 
     <div class="card hidden center" id="screen-game">
-      <h2 id="gameTitle">Tu palabra</h2>
-      <p class="sub">No enseñes la pantalla a nadie. Pulsa cuando estés listo.</p>
+      <div class="topbar" style="margin-bottom:0;">
+        <div>
+          <h2 id="gameTitle">Tu palabra</h2>
+          <p class="sub" style="margin-top:6px;">No enseñes la pantalla a nadie. Pulsa cuando estés listo.</p>
+        </div>
+        <div>
+          <div class="tag" id="gameRoomTag">Sala: -</div>
+          <div class="tag" id="gameRoundTag">Ronda: 1</div>
+        </div>
+      </div>
 
       <div class="word-box" id="myWordBox">•••••</div>
 
-      <div class="grid" style="max-width:420px;margin:18px auto 0;">
+      <div class="grid-3" style="margin-top:18px;">
         <button class="btn-primary" id="btnRevealWord">Mostrar palabra</button>
         <button class="btn-secondary" id="btnHideWord">Ocultar palabra</button>
+        <button class="btn-warning hidden" id="btnNextRound">Siguiente palabra</button>
       </div>
 
-      <p class="small" style="margin-top:16px;">
+      <div class="grid" style="max-width:420px;margin:14px auto 0;">
+        <button class="btn-danger hidden" id="btnFinishGame">Finalizar partida</button>
+      </div>
+
+      <p class="small" id="gameInfo" style="margin-top:16px;">
         Después, hablad entre vosotros e intentad descubrir quién tiene la palabra distinta.
       </p>
+    </div>
+
+    <div class="card hidden center" id="screen-finished">
+      <h2>Partida finalizada</h2>
+      <p class="sub">La sala ha terminado. Puedes volver al inicio para crear una nueva sala o unirte a otra.</p>
+      <div class="grid" style="max-width:320px;margin:0 auto;">
+        <button class="btn-primary" id="btnBackHome">Volver al inicio</button>
+      </div>
     </div>
 
     <div class="footer-note">
@@ -366,433 +398,141 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    /***********************
-     * CONFIGURACIÓN
-     ***********************/
     const ACCESS_PASSWORD = "fUn67.12amÑ";
-
-    // PEGA AQUÍ TUS DATOS DE SUPABASE
     const SUPABASE_URL = "https://dcnrmbwoaerovnbhdypc.supabase.co";
     const SUPABASE_KEY = "sb_publishable_crEhrH4ArIzCbOT343mh4Q_wiS3dpYx";
+    const JOIN_WINDOW_MINUTES = 6;
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabase = null;
 
-    /***********************
-     * BASE DE PALABRAS
-     ***********************/
+    function hasSupabaseConfig(){
+      return SUPABASE_URL && SUPABASE_KEY && !SUPABASE_URL.includes("PEGA_AQUI") && !SUPABASE_KEY.includes("PEGA_AQUI");
+    }
+
+    function getSupabase(){
+      if (supabase) return supabase;
+      if (!hasSupabaseConfig()) {
+        throw new Error("Falta configurar Supabase URL o KEY en index.html");
+      }
+      supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+      return supabase;
+    }
+
     const WORDS = {
       es: {
-        sports: [
-          ["fútbol","baloncesto"],
-          ["tenis","pádel"],
-          ["voleibol","balonmano"],
-          ["natación","atletismo"],
-          ["boxeo","judo"],
-          ["ciclismo","motociclismo"]
-        ],
-        countries: [
-          ["España","Italia"],
-          ["Francia","Portugal"],
-          ["México","Argentina"],
-          ["Japón","Corea"],
-          ["Brasil","Colombia"],
-          ["Egipto","Marruecos"]
-        ],
-        languages: [
-          ["español","italiano"],
-          ["inglés","alemán"],
-          ["francés","portugués"],
-          ["árabe","hebreo"],
-          ["japonés","chino"],
-          ["catalán","gallego"]
-        ],
-        foods: [
-          ["pizza","hamburguesa"],
-          ["sushi","ramen"],
-          ["paella","risotto"],
-          ["ensalada","sopa"],
-          ["taco","burrito"],
-          ["croqueta","empanadilla"]
-        ],
-        animals: [
-          ["perro","gato"],
-          ["león","tigre"],
-          ["caballo","burro"],
-          ["delfín","tiburón"],
-          ["águila","halcón"],
-          ["oveja","cabra"]
-        ],
-        jobs: [
-          ["doctor","enfermero"],
-          ["policía","bombero"],
-          ["profesor","abogado"],
-          ["cocinero","camarero"],
-          ["arquitecto","ingeniero"],
-          ["dentista","veterinario"]
-        ],
-        fruits: [
-          ["manzana","pera"],
-          ["plátano","mango"],
-          ["uva","cereza"],
-          ["naranja","mandarina"],
-          ["sandía","melón"],
-          ["kiwi","piña"]
-        ],
-        transport: [
-          ["coche","moto"],
-          ["tren","metro"],
-          ["avión","helicóptero"],
-          ["barco","submarino"],
-          ["bicicleta","patinete"],
-          ["autobús","tranvía"]
-        ],
-        objects: [
-          ["mesa","silla"],
-          ["reloj","calendario"],
-          ["llave","candado"],
-          ["vaso","taza"],
-          ["lámpara","linterna"],
-          ["cuaderno","libro"]
-        ],
-        places: [
-          ["playa","montaña"],
-          ["museo","biblioteca"],
-          ["hospital","farmacia"],
-          ["aeropuerto","estación"],
-          ["restaurante","cafetería"],
-          ["parque","plaza"]
-        ],
-        clothes: [
-          ["camisa","chaqueta"],
-          ["zapato","sandalia"],
-          ["sombrero","gorra"],
-          ["bufanda","guante"],
-          ["pantalón","falda"],
-          ["anillo","pulsera"]
-        ],
-        nature: [
-          ["lluvia","nieve"],
-          ["río","lago"],
-          ["bosque","selva"],
-          ["trueno","relámpago"],
-          ["sol","luna"],
-          ["arena","roca"]
-        ],
-        tools: [
-          ["martillo","destornillador"],
-          ["cuchara","tenedor"],
-          ["sierra","lima"],
-          ["taladro","llave inglesa"],
-          ["tijeras","cúter"],
-          ["escoba","fregona"]
-        ],
-        abstract: [
-          ["justicia","ley"],
-          ["azar","suerte"],
-          ["promesa","juramento"],
-          ["secreto","mentira"],
-          ["memoria","recuerdo"],
-          ["paz","calma"]
-        ],
-        body: [
-          ["codo","rodilla"],
-          ["pestaña","ceja"],
-          ["tobillo","muñeca"],
-          ["garganta","lengua"],
-          ["columna","costilla"],
-          ["pulgar","índice"]
-        ],
-        tech: [
-          ["dron","cámara"],
-          ["consola","ordenador"],
-          ["auriculares","altavoz"],
-          ["impresora","escáner"],
-          ["app","web"],
-          ["teclado","ratón"]
-        ],
-        senses: [
-          ["olfato","gusto"],
-          ["tacto","visión"],
-          ["sonido","silencio"],
-          ["olor","perfume"],
-          ["frío","calor"],
-          ["brillo","sombra"]
-        ]
+        sports: [["fútbol","baloncesto"],["tenis","pádel"],["voleibol","balonmano"],["natación","atletismo"],["boxeo","judo"],["ciclismo","motociclismo"]],
+        countries: [["España","Italia"],["Francia","Portugal"],["México","Argentina"],["Japón","Corea"],["Brasil","Colombia"],["Egipto","Marruecos"]],
+        languages: [["español","italiano"],["inglés","alemán"],["francés","portugués"],["árabe","hebreo"],["japonés","chino"],["catalán","gallego"]],
+        foods: [["pizza","hamburguesa"],["sushi","ramen"],["paella","risotto"],["ensalada","sopa"],["taco","burrito"],["croqueta","empanadilla"]],
+        animals: [["perro","gato"],["león","tigre"],["caballo","burro"],["delfín","tiburón"],["águila","halcón"],["oveja","cabra"]],
+        jobs: [["doctor","enfermero"],["policía","bombero"],["profesor","abogado"],["cocinero","camarero"],["arquitecto","ingeniero"],["dentista","veterinario"]],
+        fruits: [["manzana","pera"],["plátano","mango"],["uva","cereza"],["naranja","mandarina"],["sandía","melón"],["kiwi","piña"]],
+        transport: [["coche","moto"],["tren","metro"],["avión","helicóptero"],["barco","submarino"],["bicicleta","patinete"],["autobús","tranvía"]],
+        objects: [["mesa","silla"],["reloj","calendario"],["llave","candado"],["vaso","taza"],["lámpara","linterna"],["cuaderno","libro"]],
+        places: [["playa","montaña"],["museo","biblioteca"],["hospital","farmacia"],["aeropuerto","estación"],["restaurante","cafetería"],["parque","plaza"]],
+        clothes: [["camisa","chaqueta"],["zapato","sandalia"],["sombrero","gorra"],["bufanda","guante"],["pantalón","falda"],["anillo","pulsera"]],
+        nature: [["lluvia","nieve"],["río","lago"],["bosque","selva"],["trueno","relámpago"],["sol","luna"],["arena","roca"]],
+        tools: [["martillo","destornillador"],["cuchara","tenedor"],["sierra","lima"],["taladro","llave inglesa"],["tijeras","cúter"],["escoba","fregona"]],
+        abstract: [["justicia","ley"],["azar","suerte"],["promesa","juramento"],["secreto","mentira"],["memoria","recuerdo"],["paz","calma"]],
+        body: [["codo","rodilla"],["pestaña","ceja"],["tobillo","muñeca"],["garganta","lengua"],["columna","costilla"],["pulgar","índice"]],
+        tech: [["dron","cámara"],["consola","ordenador"],["auriculares","altavoz"],["impresora","escáner"],["app","web"],["teclado","ratón"]],
+        senses: [["olfato","gusto"],["tacto","visión"],["sonido","silencio"],["olor","perfume"],["frío","calor"],["brillo","sombra"]]
       },
       en: {
-        sports: [
-          ["soccer","basketball"],
-          ["tennis","padel"],
-          ["volleyball","handball"],
-          ["swimming","athletics"],
-          ["boxing","judo"],
-          ["cycling","motorsport"]
-        ],
-        countries: [
-          ["Spain","Italy"],
-          ["France","Portugal"],
-          ["Mexico","Argentina"],
-          ["Japan","Korea"],
-          ["Brazil","Colombia"],
-          ["Egypt","Morocco"]
-        ],
-        languages: [
-          ["Spanish","Italian"],
-          ["English","German"],
-          ["French","Portuguese"],
-          ["Arabic","Hebrew"],
-          ["Japanese","Chinese"],
-          ["Catalan","Galician"]
-        ],
-        foods: [
-          ["pizza","burger"],
-          ["sushi","ramen"],
-          ["paella","risotto"],
-          ["salad","soup"],
-          ["taco","burrito"],
-          ["croquette","dumpling"]
-        ],
-        animals: [
-          ["dog","cat"],
-          ["lion","tiger"],
-          ["horse","donkey"],
-          ["dolphin","shark"],
-          ["eagle","falcon"],
-          ["sheep","goat"]
-        ],
-        jobs: [
-          ["doctor","nurse"],
-          ["police officer","firefighter"],
-          ["teacher","lawyer"],
-          ["chef","waiter"],
-          ["architect","engineer"],
-          ["dentist","veterinarian"]
-        ],
-        fruits: [
-          ["apple","pear"],
-          ["banana","mango"],
-          ["grape","cherry"],
-          ["orange","tangerine"],
-          ["watermelon","melon"],
-          ["kiwi","pineapple"]
-        ],
-        transport: [
-          ["car","motorbike"],
-          ["train","subway"],
-          ["plane","helicopter"],
-          ["boat","submarine"],
-          ["bicycle","scooter"],
-          ["bus","tram"]
-        ],
-        objects: [
-          ["table","chair"],
-          ["clock","calendar"],
-          ["key","lock"],
-          ["glass","cup"],
-          ["lamp","flashlight"],
-          ["notebook","book"]
-        ],
-        places: [
-          ["beach","mountain"],
-          ["museum","library"],
-          ["hospital","pharmacy"],
-          ["airport","station"],
-          ["restaurant","cafe"],
-          ["park","square"]
-        ],
-        clothes: [
-          ["shirt","jacket"],
-          ["shoe","sandal"],
-          ["hat","cap"],
-          ["scarf","glove"],
-          ["trousers","skirt"],
-          ["ring","bracelet"]
-        ],
-        nature: [
-          ["rain","snow"],
-          ["river","lake"],
-          ["forest","jungle"],
-          ["thunder","lightning"],
-          ["sun","moon"],
-          ["sand","rock"]
-        ],
-        tools: [
-          ["hammer","screwdriver"],
-          ["spoon","fork"],
-          ["saw","file"],
-          ["drill","wrench"],
-          ["scissors","cutter"],
-          ["broom","mop"]
-        ],
-        abstract: [
-          ["justice","law"],
-          ["chance","luck"],
-          ["promise","oath"],
-          ["secret","lie"],
-          ["memory","remembrance"],
-          ["peace","calm"]
-        ],
-        body: [
-          ["elbow","knee"],
-          ["eyelash","eyebrow"],
-          ["ankle","wrist"],
-          ["throat","tongue"],
-          ["spine","rib"],
-          ["thumb","index finger"]
-        ],
-        tech: [
-          ["drone","camera"],
-          ["console","computer"],
-          ["headphones","speaker"],
-          ["printer","scanner"],
-          ["app","website"],
-          ["keyboard","mouse"]
-        ],
-        senses: [
-          ["smell","taste"],
-          ["touch","vision"],
-          ["sound","silence"],
-          ["odor","perfume"],
-          ["cold","heat"],
-          ["brightness","shadow"]
-        ]
+        sports: [["soccer","basketball"],["tennis","padel"],["volleyball","handball"],["swimming","athletics"],["boxing","judo"],["cycling","motorsport"]],
+        countries: [["Spain","Italy"],["France","Portugal"],["Mexico","Argentina"],["Japan","Korea"],["Brazil","Colombia"],["Egypt","Morocco"]],
+        languages: [["Spanish","Italian"],["English","German"],["French","Portuguese"],["Arabic","Hebrew"],["Japanese","Chinese"],["Catalan","Galician"]],
+        foods: [["pizza","burger"],["sushi","ramen"],["paella","risotto"],["salad","soup"],["taco","burrito"],["croquette","dumpling"]],
+        animals: [["dog","cat"],["lion","tiger"],["horse","donkey"],["dolphin","shark"],["eagle","falcon"],["sheep","goat"]],
+        jobs: [["doctor","nurse"],["police officer","firefighter"],["teacher","lawyer"],["chef","waiter"],["architect","engineer"],["dentist","veterinarian"]],
+        fruits: [["apple","pear"],["banana","mango"],["grape","cherry"],["orange","tangerine"],["watermelon","melon"],["kiwi","pineapple"]],
+        transport: [["car","motorbike"],["train","subway"],["plane","helicopter"],["boat","submarine"],["bicycle","scooter"],["bus","tram"]],
+        objects: [["table","chair"],["clock","calendar"],["key","lock"],["glass","cup"],["lamp","flashlight"],["notebook","book"]],
+        places: [["beach","mountain"],["museum","library"],["hospital","pharmacy"],["airport","station"],["restaurant","cafe"] , ["park","square"]],
+        clothes: [["shirt","jacket"],["shoe","sandal"],["hat","cap"],["scarf","glove"],["trousers","skirt"],["ring","bracelet"]],
+        nature: [["rain","snow"],["river","lake"],["forest","jungle"],["thunder","lightning"],["sun","moon"],["sand","rock"]],
+        tools: [["hammer","screwdriver"],["spoon","fork"],["saw","file"],["drill","wrench"],["scissors","cutter"],["broom","mop"]],
+        abstract: [["justice","law"],["chance","luck"],["promise","oath"],["secret","lie"],["memory","remembrance"],["peace","calm"]],
+        body: [["elbow","knee"],["eyelash","eyebrow"],["ankle","wrist"],["throat","tongue"],["spine","rib"],["thumb","index finger"]],
+        tech: [["drone","camera"],["console","computer"],["headphones","speaker"],["printer","scanner"],["app","website"],["keyboard","mouse"]],
+        senses: [["smell","taste"],["touch","vision"],["sound","silence"],["odor","perfume"],["cold","heat"],["brightness","shadow"]]
       }
     };
 
-    /***********************
-     * ESTADO
-     ***********************/
     let currentRoom = null;
     let currentPlayer = null;
     let roomPoll = null;
     let countdownPoll = null;
+    let gamePoll = null;
+    let lastSeenRound = null;
 
     const el = (id) => document.getElementById(id);
 
     function show(screenId){
-      ["screen-auth","screen-home","screen-lobby","screen-game"].forEach(id => {
+      ["screen-auth","screen-home","screen-lobby","screen-game","screen-finished"].forEach(id => {
         el(id).classList.add("hidden");
       });
       el(screenId).classList.remove("hidden");
     }
 
-    function setText(id, value){
-      el(id).textContent = value;
-    }
-
-    function showError(targetId, msg){
-      const node = el(targetId);
-      node.textContent = msg;
-      node.classList.remove("hidden");
-    }
-
-    function hideError(targetId){
-      el(targetId).classList.add("hidden");
-      el(targetId).textContent = "";
-    }
-
-    function normalizeName(name){
-      return (name || "").trim().replace(/\s+/g, " ").slice(0,20);
-    }
+    function setText(id, value){ el(id).textContent = value; }
+    function showError(targetId, msg){ const node = el(targetId); node.textContent = msg; node.classList.remove("hidden"); }
+    function hideError(targetId){ el(targetId).classList.add("hidden"); el(targetId).textContent = ""; }
+    function normalizeName(name){ return (name || "").trim().replace(/\s+/g, " ").slice(0,20); }
 
     function makeRoomCode(){
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let out = "";
-      for(let i=0;i<6;i++){
-        out += chars[Math.floor(Math.random()*chars.length)];
-      }
+      for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
       return out;
-    }
-
-    function shuffle(arr){
-      return [...arr].sort(() => Math.random() - 0.5);
     }
 
     function getThemeLabel(theme){
       const labels = {
-        random:"Random",
-        sports:"Deportes",
-        countries:"Países",
-        languages:"Idiomas",
-        foods:"Comidas",
-        animals:"Animales",
-        jobs:"Profesiones",
-        fruits:"Frutas",
-        transport:"Transportes",
-        objects:"Objetos cotidianos",
-        places:"Lugares y espacios",
-        clothes:"Ropa y accesorios",
-        nature:"Elementos naturales y clima",
-        tools:"Herramientas y utensilios",
-        abstract:"Conceptos abstractos",
-        body:"Partes del cuerpo",
-        tech:"Tecnología",
-        senses:"Sentidos y percepciones"
+        random:"Random", sports:"Deportes", countries:"Países", languages:"Idiomas", foods:"Comidas", animals:"Animales", jobs:"Profesiones", fruits:"Frutas", transport:"Transportes", objects:"Objetos cotidianos", places:"Lugares y espacios", clothes:"Ropa y accesorios", nature:"Elementos naturales y clima", tools:"Herramientas y utensilios", abstract:"Conceptos abstractos", body:"Partes del cuerpo", tech:"Tecnología", senses:"Sentidos y percepciones"
       };
       return labels[theme] || theme;
     }
 
-    function getLangLabel(lang){
-      return lang === "en" ? "English" : "Español";
-    }
-
-    function getDeadlinePlus3MinutesISO(){
-      return new Date(Date.now() + 3 * 60 * 1000).toISOString();
-    }
-
-    function secondsRemaining(deadlineIso){
-      const diff = new Date(deadlineIso).getTime() - Date.now();
-      return Math.max(0, Math.floor(diff / 1000));
-    }
+    function getLangLabel(lang){ return lang === "en" ? "English" : "Español"; }
+    function getDeadlinePlus6MinutesISO(){ return new Date(Date.now() + JOIN_WINDOW_MINUTES * 60 * 1000).toISOString(); }
+    function secondsRemaining(deadlineIso){ const diff = new Date(deadlineIso).getTime() - Date.now(); return Math.max(0, Math.floor(diff / 1000)); }
 
     function pickWordPair(theme, language){
       const langPack = WORDS[language];
       let themeToUse = theme;
-
       if(theme === "random"){
         const available = Object.keys(langPack);
         themeToUse = available[Math.floor(Math.random() * available.length)];
       }
-
       const pairs = langPack[themeToUse];
       const pair = pairs[Math.floor(Math.random() * pairs.length)];
-
       return { themeUsed: themeToUse, pair };
     }
 
-    async function getRoom(roomCode){
-      const { data, error } = await supabase
-        .from("rooms")
-        .select("*")
-        .eq("id", roomCode)
-        .maybeSingle();
+    function capitalizeWord(text){
+      if(!text) return "";
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
 
+    async function getRoom(roomCode){
+      const { data, error } = await getSupabase().from("rooms").select("*").eq("id", roomCode).maybeSingle();
       if(error) throw error;
       return data;
     }
 
     async function getPlayers(roomCode){
-      const { data, error } = await supabase
-        .from("players")
-        .select("*")
-        .eq("room_id", roomCode)
-        .order("joined_at", { ascending: true });
-
+      const { data, error } = await getSupabase().from("players").select("*").eq("room_id", roomCode).order("joined_at", { ascending: true });
       if(error) throw error;
       return data || [];
     }
 
     async function createRoom(){
       hideError("homeError");
-
       const hostName = normalizeName(el("hostName").value);
       const language = el("hostLanguage").value;
       const theme = el("hostTheme").value;
-
-      if(!hostName){
-        showError("homeError","Escribe tu nombre para crear la sala.");
-        return;
-      }
+      if(!hostName){ showError("homeError","Escribe tu nombre para crear la sala."); return; }
 
       let roomCode = "";
       let created = false;
@@ -801,32 +541,27 @@
         roomCode = makeRoomCode();
         const existing = await getRoom(roomCode);
         if(!existing){
-          const { error: roomError } = await supabase.from("rooms").insert({
+          const { error: roomError } = await getSupabase().from("rooms").insert({
             id: roomCode,
             host_name: hostName,
             language,
             theme,
             status: "lobby",
-            join_deadline: getDeadlinePlus3MinutesISO(),
+            join_deadline: getDeadlinePlus6MinutesISO(),
             common_word: null,
             liar_word: null,
-            theme_used: null
+            theme_used: null,
+            round_number: 0
           });
-
           if(roomError) throw roomError;
 
-          const { data: insertedPlayer, error: playerError } = await supabase
-            .from("players")
-            .insert({
-              room_id: roomCode,
-              name: hostName,
-              is_host: true,
-              word: null,
-              is_liar: false
-            })
-            .select()
-            .single();
-
+          const { data: insertedPlayer, error: playerError } = await getSupabase().from("players").insert({
+            room_id: roomCode,
+            name: hostName,
+            is_host: true,
+            word: null,
+            is_liar: false
+          }).select().single();
           if(playerError) throw playerError;
 
           currentRoom = roomCode;
@@ -835,87 +570,50 @@
         }
       }
 
-      if(!created){
-        showError("homeError","No se pudo crear la sala. Inténtalo otra vez.");
-        return;
-      }
-
+      if(!created){ showError("homeError","No se pudo crear la sala. Inténtalo otra vez."); return; }
       openLobby();
     }
 
     async function joinRoom(){
       hideError("homeError");
-
       const name = normalizeName(el("joinName").value);
       const roomCode = (el("joinRoomCode").value || "").trim().toUpperCase();
 
-      if(!name){
-        showError("homeError","Escribe tu nombre para entrar.");
-        return;
-      }
-
-      if(!roomCode){
-        showError("homeError","Introduce el código de sala.");
-        return;
-      }
+      if(!name){ showError("homeError","Escribe tu nombre para entrar."); return; }
+      if(!roomCode){ showError("homeError","Introduce el código de sala."); return; }
 
       const room = await getRoom(roomCode);
-
-      if(!room){
-        showError("homeError","No existe una sala con ese código.");
-        return;
-      }
-
-      if(room.status !== "lobby"){
-        showError("homeError","La partida ya ha empezado o la sala ya no admite jugadores.");
-        return;
-      }
-
-      if(secondsRemaining(room.join_deadline) <= 0){
-        showError("homeError","La ventana de unión de 3 minutos ya terminó.");
-        return;
-      }
+      if(!room){ showError("homeError","No existe una sala con ese código."); return; }
+      if(room.status !== "lobby"){ showError("homeError","La partida ya ha empezado o la sala ya no admite jugadores."); return; }
+      if(secondsRemaining(room.join_deadline) <= 0){ showError("homeError","La ventana de unión de 6 minutos ya terminó."); return; }
 
       const players = await getPlayers(roomCode);
       const duplicate = players.find(p => p.name.toLowerCase() === name.toLowerCase());
+      if(duplicate){ showError("homeError","Ya hay un jugador con ese nombre en la sala. Usa otro."); return; }
 
-      if(duplicate){
-        showError("homeError","Ya hay un jugador con ese nombre en la sala. Usa otro.");
-        return;
-      }
-
-      const { data: insertedPlayer, error } = await supabase
-        .from("players")
-        .insert({
-          room_id: roomCode,
-          name,
-          is_host: false,
-          word: null,
-          is_liar: false
-        })
-        .select()
-        .single();
-
+      const { data: insertedPlayer, error } = await getSupabase().from("players").insert({
+        room_id: roomCode,
+        name,
+        is_host: false,
+        word: null,
+        is_liar: false
+      }).select().single();
       if(error) throw error;
 
       currentRoom = roomCode;
       currentPlayer = insertedPlayer;
-
       openLobby();
     }
 
     async function renderLobby(){
       const room = await getRoom(currentRoom);
-      if(!room){
-        stopLobbyPolling();
-        show("screen-home");
-        return;
-      }
+      if(!room){ stopAllPolling(); show("screen-home"); return; }
 
       setText("roomCodeLabel", room.id);
       setText("roomThemeTag", `Tema: ${getThemeLabel(room.theme)}`);
       setText("roomLangTag", `Idioma: ${getLangLabel(room.language)}`);
       setText("roomHostTag", `Host: ${room.host_name}`);
+      setText("roomRoundTag", `Ronda: ${room.round_number || 0}`);
 
       const players = await getPlayers(currentRoom);
       el("playersList").innerHTML = players.map(p => `
@@ -932,18 +630,13 @@
       setText("lobbyTimer", String(secs));
 
       const isHost = currentPlayer?.is_host === true;
-
       el("btnStartGame").disabled = !isHost || players.length < 3;
       el("btnStartGame").textContent = isHost ? "Empezar partida" : "Solo el host puede empezar";
 
       let info = "";
-      if(players.length < 3){
-        info = "Necesitáis al menos 3 jugadores para empezar.";
-      } else if(isHost){
-        info = "Puedes empezar ya o esperar a que termine el tiempo.";
-      } else {
-        info = "Esperando a que el host inicie la partida.";
-      }
+      if(players.length < 3) info = "Necesitáis al menos 3 jugadores para empezar.";
+      else if(isHost) info = "Puedes empezar ya o esperar a que termine el tiempo.";
+      else info = "Esperando a que el host inicie la partida.";
 
       if(secs <= 0 && room.status === "lobby"){
         if(isHost && players.length >= 3){
@@ -951,16 +644,18 @@
           setText("lobbyInfo", info);
           await startGame();
           return;
-        } else if(players.length < 3){
+        } else if(players.length < 3) {
           info = "El tiempo terminó, pero no hay suficientes jugadores. El host debe crear una sala nueva.";
         }
       }
 
       setText("lobbyInfo", info);
-
       if(room.status === "started"){
         stopLobbyPolling();
         await openGame();
+      } else if(room.status === "finished"){
+        stopAllPolling();
+        show("screen-finished");
       }
     }
 
@@ -970,8 +665,7 @@
       roomPoll = setInterval(renderLobby, 2000);
       countdownPoll = setInterval(async () => {
         const room = await getRoom(currentRoom);
-        if(!room) return;
-        setText("lobbyTimer", String(secondsRemaining(room.join_deadline)));
+        if(room) setText("lobbyTimer", String(secondsRemaining(room.join_deadline)));
       }, 1000);
     }
 
@@ -982,10 +676,46 @@
       countdownPoll = null;
     }
 
+    function stopGamePolling(){
+      if(gamePoll) clearInterval(gamePoll);
+      gamePoll = null;
+    }
+
+    function stopAllPolling(){
+      stopLobbyPolling();
+      stopGamePolling();
+    }
+
     async function openLobby(){
       show("screen-lobby");
       await renderLobby();
       startLobbyPolling();
+    }
+
+    async function assignRoundWords(room, players, nextRoundNumber){
+      const { themeUsed, pair } = pickWordPair(room.theme, room.language);
+      const liarIndex = Math.floor(Math.random() * players.length);
+
+      for(let i = 0; i < players.length; i++){
+        const player = players[i];
+        const assignedWord = i === liarIndex ? pair[1] : pair[0];
+        const isLiar = i === liarIndex;
+
+        const { error } = await getSupabase().from("players").update({
+          word: assignedWord,
+          is_liar: isLiar
+        }).eq("id", player.id);
+        if(error) throw error;
+      }
+
+      const { error: roomError } = await getSupabase().from("rooms").update({
+        status: "started",
+        common_word: pair[0],
+        liar_word: pair[1],
+        theme_used: themeUsed,
+        round_number: nextRoundNumber
+      }).eq("id", currentRoom);
+      if(roomError) throw roomError;
     }
 
     async function startGame(){
@@ -996,70 +726,72 @@
       if(!room || room.status !== "lobby") return;
       if(players.length < 3) return alert("Se necesitan al menos 3 jugadores.");
 
-      const { themeUsed, pair } = pickWordPair(room.theme, room.language);
-      const liarIndex = Math.floor(Math.random() * players.length);
-
-      for(let i = 0; i < players.length; i++){
-        const player = players[i];
-        const assignedWord = i === liarIndex ? pair[1] : pair[0];
-        const isLiar = i === liarIndex;
-
-        const { error } = await supabase
-          .from("players")
-          .update({
-            word: assignedWord,
-            is_liar: isLiar
-          })
-          .eq("id", player.id);
-
-        if(error) throw error;
-      }
-
-      const { error: roomError } = await supabase
-        .from("rooms")
-        .update({
-          status: "started",
-          common_word: pair[0],
-          liar_word: pair[1],
-          theme_used: themeUsed
-        })
-        .eq("id", currentRoom);
-
-      if(roomError) throw roomError;
-
+      await assignRoundWords(room, players, 1);
       stopLobbyPolling();
       await openGame();
     }
 
+    async function nextRound(){
+      const room = await getRoom(currentRoom);
+      const players = await getPlayers(currentRoom);
+      if(!currentPlayer?.is_host) return;
+      if(!room || room.status !== "started") return;
+      if(players.length < 3) return alert("Se necesitan al menos 3 jugadores.");
+
+      await assignRoundWords(room, players, (room.round_number || 1) + 1);
+      await syncGameState(true);
+    }
+
+    async function finishGame(){
+      if(!currentPlayer?.is_host) return;
+      const { error } = await getSupabase().from("rooms").update({ status: "finished" }).eq("id", currentRoom);
+      if(error) throw error;
+      stopAllPolling();
+      show("screen-finished");
+    }
+
+    async function syncGameState(forceWordRefresh = false){
+      const room = await getRoom(currentRoom);
+      if(!room){ stopAllPolling(); show("screen-home"); return; }
+      if(room.status === "finished"){
+        stopAllPolling();
+        show("screen-finished");
+        return;
+      }
+
+      const { data, error } = await getSupabase().from("players").select("*").eq("id", currentPlayer.id).single();
+      if(error) throw error;
+      currentPlayer = data;
+
+      setText("gameRoomTag", `Sala: ${room.id}`);
+      setText("gameRoundTag", `Ronda: ${room.round_number || 1}`);
+      const isHost = currentPlayer.is_host === true;
+      el("btnNextRound").classList.toggle("hidden", !isHost);
+      el("btnFinishGame").classList.toggle("hidden", !isHost);
+
+      if(forceWordRefresh || lastSeenRound !== room.round_number){
+        lastSeenRound = room.round_number;
+        el("myWordBox").textContent = "•••••";
+        setText("gameInfo", isHost
+          ? "Puedes mostrar tu palabra, iniciar la siguiente ronda o finalizar la partida."
+          : "Espera a que el host cambie de ronda o finalice la partida.");
+      }
+    }
+
     async function openGame(){
       show("screen-game");
-
-      const { data, error } = await supabase
-        .from("players")
-        .select("*")
-        .eq("id", currentPlayer.id)
-        .single();
-
-      if(error) throw error;
-
-      currentPlayer = data;
-      el("myWordBox").textContent = "•••••";
-      el("btnRevealWord").onclick = () => {
-        el("myWordBox").textContent = currentPlayer.word || "(sin palabra)";
-      };
-      el("btnHideWord").onclick = () => {
-        el("myWordBox").textContent = "•••••";
-      };
+      lastSeenRound = null;
+      await syncGameState(true);
+      stopGamePolling();
+      gamePoll = setInterval(() => syncGameState(false), 2000);
     }
 
     async function leaveRoom(){
-      if(currentPlayer?.id){
-        await supabase.from("players").delete().eq("id", currentPlayer.id);
-      }
-
-      stopLobbyPolling();
+      if(currentPlayer?.id) await getSupabase().from("players").delete().eq("id", currentPlayer.id);
+      stopAllPolling();
       currentRoom = null;
       currentPlayer = null;
+      lastSeenRound = null;
       show("screen-home");
     }
 
@@ -1072,53 +804,65 @@
         .replaceAll("'","&#039;");
     }
 
-    /***********************
-     * EVENTOS
-     ***********************/
+    el("btnTogglePassword").addEventListener("click", () => {
+      const input = el("accessPassword");
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      el("btnTogglePassword").textContent = showing ? "Mostrar" : "Ocultar";
+    });
+
     el("btnAccess").addEventListener("click", () => {
       hideError("authError");
       const entered = el("accessPassword").value;
-      if(entered !== ACCESS_PASSWORD){
-        showError("authError", "Clave incorrecta.");
-        return;
-      }
+      if(entered !== ACCESS_PASSWORD){ showError("authError", "Clave incorrecta."); return; }
       show("screen-home");
     });
 
+    el("accessPassword").addEventListener("keydown", (e) => {
+      if(e.key === "Enter") el("btnAccess").click();
+    });
+
     el("btnCreateRoom").addEventListener("click", async () => {
-      try {
-        await createRoom();
-      } catch (err) {
-        console.error(err);
-        showError("homeError", "No se pudo crear la sala. Revisa la configuración de Supabase.");
-      }
+      try { await createRoom(); }
+      catch (err) { console.error(err); showError("homeError", "No se pudo crear la sala. Revisa la configuración de Supabase."); }
     });
 
     el("btnJoinRoom").addEventListener("click", async () => {
-      try {
-        await joinRoom();
-      } catch (err) {
-        console.error(err);
-        showError("homeError", "No se pudo entrar en la sala. Revisa el código o la configuración.");
-      }
+      try { await joinRoom(); }
+      catch (err) { console.error(err); showError("homeError", "No se pudo entrar en la sala. Revisa el código o la configuración."); }
     });
 
     el("btnStartGame").addEventListener("click", async () => {
-      try {
-        await startGame();
-      } catch (err) {
-        console.error(err);
-        alert("No se pudo iniciar la partida.");
-      }
+      try { await startGame(); }
+      catch (err) { console.error(err); alert("No se pudo iniciar la partida."); }
     });
 
     el("btnLeaveRoom").addEventListener("click", async () => {
-      try {
-        await leaveRoom();
-      } catch (err) {
-        console.error(err);
-        show("screen-home");
-      }
+      try { await leaveRoom(); }
+      catch (err) { console.error(err); show("screen-home"); }
+    });
+
+    el("btnRevealWord").addEventListener("click", () => {
+      el("myWordBox").textContent = capitalizeWord(currentPlayer?.word || "(sin palabra)");
+    });
+
+    el("btnHideWord").addEventListener("click", () => {
+      el("myWordBox").textContent = "•••••";
+    });
+
+    el("btnNextRound").addEventListener("click", async () => {
+      try { await nextRound(); }
+      catch (err) { console.error(err); alert("No se pudo pasar a la siguiente palabra."); }
+    });
+
+    el("btnFinishGame").addEventListener("click", async () => {
+      try { await finishGame(); }
+      catch (err) { console.error(err); alert("No se pudo finalizar la partida."); }
+    });
+
+    el("btnBackHome").addEventListener("click", async () => {
+      try { await leaveRoom(); }
+      catch (err) { console.error(err); show("screen-home"); }
     });
   </script>
 </body>
