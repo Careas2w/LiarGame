@@ -24,8 +24,12 @@ Paquete listo para subir a GitHub Pages.
 - Mostrar y ocultar la clave de acceso.
 - Ventana de unión ampliada a 6 minutos.
 - Botón `Siguiente palabra` para crear otra ronda.
-- Botón `Finalizar partida`.
+- Botón `Finalizar partida` que devuelve a la pantalla inicial de crear o unirse a sala.
 - La palabra sale con la primera letra en mayúscula y con fuente más grande.
 
 ## Nota
 La clave de acceso incluida en una web estática no es secreta de verdad. Sirve como barrera ligera, no como seguridad fuerte.
+
+
+## Importante si ya tenías una versión anterior
+Vuelve a ejecutar `supabase_setup.sql` en Supabase para asegurarte de que existe la columna `round_number`, necesaria para las rondas múltiples.

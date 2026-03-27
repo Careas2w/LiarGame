@@ -382,14 +382,7 @@
       </p>
     </div>
 
-    <div class="card hidden center" id="screen-finished">
-      <h2>Partida finalizada</h2>
-      <p class="sub">La sala ha terminado. Puedes volver al inicio para crear una nueva sala o unirte a otra.</p>
-      <div class="grid" style="max-width:320px;margin:0 auto;">
-        <button class="btn-primary" id="btnBackHome">Volver al inicio</button>
-      </div>
-    </div>
-
+    
     <div class="footer-note">
       Versión estática pensada para GitHub Pages + Supabase.
     </div>
@@ -469,7 +462,7 @@
     const el = (id) => document.getElementById(id);
 
     function show(screenId){
-      ["screen-auth","screen-home","screen-lobby","screen-game","screen-finished"].forEach(id => {
+      ["screen-auth","screen-home","screen-lobby","screen-game"].forEach(id => {
         el(id).classList.add("hidden");
       });
       el(screenId).classList.remove("hidden");
@@ -654,8 +647,7 @@
         stopLobbyPolling();
         await openGame();
       } else if(room.status === "finished"){
-        stopAllPolling();
-        show("screen-finished");
+        await returnToHomeAfterFinish(false);
       }
     }
 
@@ -746,16 +738,14 @@
       if(!currentPlayer?.is_host) return;
       const { error } = await getSupabase().from("rooms").update({ status: "finished" }).eq("id", currentRoom);
       if(error) throw error;
-      stopAllPolling();
-      show("screen-finished");
+      await returnToHomeAfterFinish(true);
     }
 
     async function syncGameState(forceWordRefresh = false){
       const room = await getRoom(currentRoom);
       if(!room){ stopAllPolling(); show("screen-home"); return; }
       if(room.status === "finished"){
-        stopAllPolling();
-        show("screen-finished");
+        await returnToHomeAfterFinish(false);
         return;
       }
 
@@ -784,6 +774,20 @@
       await syncGameState(true);
       stopGamePolling();
       gamePoll = setInterval(() => syncGameState(false), 2000);
+    }
+
+
+    async function returnToHomeAfterFinish(deleteCurrentPlayer = false){
+      stopAllPolling();
+      const playerId = currentPlayer?.id;
+      currentRoom = null;
+      currentPlayer = null;
+      lastSeenRound = null;
+      if(deleteCurrentPlayer && playerId){
+        try { await getSupabase().from("players").delete().eq("id", playerId); } catch (_) {}
+      }
+      show("screen-home");
+      hideError("homeError");
     }
 
     async function leaveRoom(){
@@ -860,10 +864,6 @@
       catch (err) { console.error(err); alert("No se pudo finalizar la partida."); }
     });
 
-    el("btnBackHome").addEventListener("click", async () => {
-      try { await leaveRoom(); }
-      catch (err) { console.error(err); show("screen-home"); }
-    });
   </script>
 </body>
 </html>
