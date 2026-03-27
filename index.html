@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liar Game Online</title>
+  <style>
+    :root{
+      --bg1:#0f172a;
+      --bg2:#111827;
+      --card:#1e293b;
+      --card2:#243447;
+      --line:rgba(255,255,255,.08);
+      --text:#f8fafc;
+      --muted:#cbd5e1;
+      --accent:#38bdf8;
+      --accent2:#22c55e;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 18px 50px rgba(0,0,0,.35);
+      --radius:20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(34,197,94,.12), transparent 22%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .app{
+      width:100%;
+      max-width:980px;
+      display:grid;
+      gap:18px;
+    }
+
+    .card{
+      background:rgba(30,41,59,.92);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+
+    h1,h2,h3,p{ margin:0; }
+    h1{ font-size:clamp(28px,4vw,42px); margin-bottom:10px; }
+    h2{ font-size:24px; margin-bottom:10px; }
+    h3{ font-size:18px; margin-bottom:8px; }
+    .sub{ color:var(--muted); margin-bottom:20px; line-height:1.5; }
+
+    .grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    @media (max-width:720px){
+      .grid-2{ grid-template-columns:1fr; }
+    }
+
+    label{
+      display:block;
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:7px;
+    }
+
+    input, select, button{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:14px;
+      padding:14px 16px;
+      font-size:16px;
+    }
+
+    input, select{
+      background:#0f172a;
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    button{
+      cursor:pointer;
+      font-weight:700;
+      transition:.18s transform ease, .18s opacity ease, .18s background ease;
+    }
+
+    button:hover{ transform:translateY(-1px); }
+    button:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+
+    .btn-primary{ background:var(--accent); color:#082f49; }
+    .btn-secondary{ background:#334155; color:var(--text); }
+    .btn-success{ background:var(--accent2); color:#052e16; }
+    .btn-danger{ background:var(--danger); color:white; }
+    .btn-warning{ background:var(--warning); color:#3b2200; }
+
+    .hidden{ display:none !important; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:#0f172a;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:16px;
+    }
+
+    .players{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .player{
+      background:rgba(15,23,42,.9);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+    }
+
+    .muted{ color:var(--muted); }
+    .center{ text-align:center; }
+    .big-code{
+      font-size:clamp(28px,7vw,54px);
+      letter-spacing:.18em;
+      font-weight:900;
+      text-transform:uppercase;
+      margin:8px 0 4px;
+    }
+
+    .word-box{
+      margin-top:16px;
+      min-height:120px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      border-radius:20px;
+      border:1px dashed rgba(255,255,255,.12);
+      background:rgba(15,23,42,.85);
+      padding:22px;
+      font-size:clamp(24px,4vw,40px);
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+
+    .small{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .tag{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#0f172a;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+      margin-right:8px;
+      margin-bottom:8px;
+    }
+
+    .status-ok{ color:#86efac; }
+    .status-warn{ color:#fcd34d; }
+    .status-bad{ color:#fca5a5; }
+
+    .footer-note{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card" id="screen-auth">
+      <h1>🎭 Liar Game</h1>
+      <p class="sub">Juego online multijugador. El primer jugador crea la sala, elige el idioma y el tema de palabras. Los demás entran con el código.</p>
+
+      <div class="grid">
+        <div>
+          <label>Clave de acceso</label>
+          <input id="accessPassword" type="password" placeholder="Introduce la clave" />
+        </div>
+        <button class="btn-primary" id="btnAccess">Entrar</button>
+        <p id="authError" class="small status-bad hidden"></p>
+      </div>
+    </div>
+
+    <div class="card hidden" id="screen-home">
+      <div class="topbar">
+        <div>
+          <h2>Inicio</h2>
+          <p class="sub">Crea una sala si eres el primer jugador o únete con el código si la sala ya existe.</p>
+        </div>
+        <div class="pill">🔐 Clave validada</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="padding:18px;">
+          <h3>Crear sala</h3>
+          <p class="sub">El primer jugador decide el tema y el idioma.</p>
+
+          <div class="grid">
+            <div>
+              <label>Tu nombre</label>
+              <input id="hostName" type="text" maxlength="20" placeholder="Ej. Ana" />
+            </div>
+
+            <div>
+              <label>Idioma</label>
+              <select id="hostLanguage">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Tema</label>
+              <select id="hostTheme">
+                <option value="random">Random</option>
+                <option value="sports">Deportes</option>
+                <option value="countries">Países</option>
+                <option value="languages">Idiomas</option>
+                <option value="foods">Comidas</option>
+                <option value="animals">Animales</option>
+                <option value="jobs">Profesiones</option>
+                <option value="fruits">Frutas</option>
+                <option value="transport">Transportes</option>
+                <option value="objects">Objetos cotidianos</option>
+                <option value="places">Lugares y espacios</option>
+                <option value="clothes">Ropa y accesorios</option>
+                <option value="nature">Elementos naturales y clima</option>
+                <option value="tools">Herramientas y utensilios</option>
+                <option value="abstract">Conceptos abstractos</option>
+                <option value="body">Partes del cuerpo</option>
+                <option value="tech">Tecnología</option>
+                <option value="senses">Sentidos y percepciones</option>
+              </select>
+            </div>
+
+            <button class="btn-success" id="btnCreateRoom">Crear sala</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <h3>Unirse a sala</h3>
+          <p class="sub">Introduce tu nombre y el código que te pase quien creó la sala.</p>
+
+          <div class="grid">
+            <div>
+              <label>Tu nombre</label>
+              <input id="joinName" type="text" maxlength="20" placeholder="Ej. Luis" />
+            </div>
+
+            <div>
+              <label>Código de sala</label>
+              <input id="joinRoomCode" type="text" maxlength="6" placeholder="Ej. A7K9Q2" />
+            </div>
+
+            <button class="btn-primary" id="btnJoinRoom">Entrar en la sala</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="homeError" class="small status-bad hidden" style="margin-top:14px;"></p>
+    </div>
+
+    <div class="card hidden" id="screen-lobby">
+      <div class="topbar">
+        <div>
+          <h2>Lobby</h2>
+          <p class="sub">Los jugadores pueden unirse durante 3 minutos desde que se crea la sala.</p>
+        </div>
+        <div class="pill">⏳ Tiempo restante: <span id="lobbyTimer">180</span>s</div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="muted">Código de sala</div>
+          <div class="big-code" id="roomCodeLabel">------</div>
+          <div class="small">Comparte este código con el resto de jugadores.</div>
+        </div>
+
+        <div>
+          <div class="tag" id="roomThemeTag">Tema: -</div>
+          <div class="tag" id="roomLangTag">Idioma: -</div>
+          <div class="tag" id="roomHostTag">Host: -</div>
+          <div class="small" style="margin-top:8px;">
+            Cuando empiece la partida, cada jugador verá su palabra en su propio móvil.
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <h3>Jugadores en la sala</h3>
+        <div class="players" id="playersList"></div>
+      </div>
+
+      <div class="grid-2" style="margin-top:18px;">
+        <button class="btn-success" id="btnStartGame">Empezar partida</button>
+        <button class="btn-secondary" id="btnLeaveRoom">Salir de la sala</button>
+      </div>
+
+      <p id="lobbyInfo" class="small" style="margin-top:12px;"></p>
+    </div>
+
+    <div class="card hidden center" id="screen-game">
+      <h2 id="gameTitle">Tu palabra</h2>
+      <p class="sub">No enseñes la pantalla a nadie. Pulsa cuando estés listo.</p>
+
+      <div class="word-box" id="myWordBox">•••••</div>
+
+      <div class="grid" style="max-width:420px;margin:18px auto 0;">
+        <button class="btn-primary" id="btnRevealWord">Mostrar palabra</button>
+        <button class="btn-secondary" id="btnHideWord">Ocultar palabra</button>
+      </div>
+
+      <p class="small" style="margin-top:16px;">
+        Después, hablad entre vosotros e intentad descubrir quién tiene la palabra distinta.
+      </p>
+    </div>
+
+    <div class="footer-note">
+      Versión estática pensada para GitHub Pages + Supabase.
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    /***********************
+     * CONFIGURACIÓN
+     ***********************/
+    const ACCESS_PASSWORD = "fUn67.12amÑ";
+
+    // PEGA AQUÍ TUS DATOS DE SUPABASE
+    const SUPABASE_URL = "https://dcnrmbwoaerovnbhdypc.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_crEhrH4ArIzCbOT343mh4Q_wiS3dpYx";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    /***********************
+     * BASE DE PALABRAS
+     ***********************/
+    const WORDS = {
+      es: {
+        sports: [
+          ["fútbol","baloncesto"],
+          ["tenis","pádel"],
+          ["voleibol","balonmano"],
+          ["natación","atletismo"],
+          ["boxeo","judo"],
+          ["ciclismo","motociclismo"]
+        ],
+        countries: [
+          ["España","Italia"],
+          ["Francia","Portugal"],
+          ["México","Argentina"],
+          ["Japón","Corea"],
+          ["Brasil","Colombia"],
+          ["Egipto","Marruecos"]
+        ],
+        languages: [
+          ["español","italiano"],
+          ["inglés","alemán"],
+          ["francés","portugués"],
+          ["árabe","hebreo"],
+          ["japonés","chino"],
+          ["catalán","gallego"]
+        ],
+        foods: [
+          ["pizza","hamburguesa"],
+          ["sushi","ramen"],
+          ["paella","risotto"],
+          ["ensalada","sopa"],
+          ["taco","burrito"],
+          ["croqueta","empanadilla"]
+        ],
+        animals: [
+          ["perro","gato"],
+          ["león","tigre"],
+          ["caballo","burro"],
+          ["delfín","tiburón"],
+          ["águila","halcón"],
+          ["oveja","cabra"]
+        ],
+        jobs: [
+          ["doctor","enfermero"],
+          ["policía","bombero"],
+          ["profesor","abogado"],
+          ["cocinero","camarero"],
+          ["arquitecto","ingeniero"],
+          ["dentista","veterinario"]
+        ],
+        fruits: [
+          ["manzana","pera"],
+          ["plátano","mango"],
+          ["uva","cereza"],
+          ["naranja","mandarina"],
+          ["sandía","melón"],
+          ["kiwi","piña"]
+        ],
+        transport: [
+          ["coche","moto"],
+          ["tren","metro"],
+          ["avión","helicóptero"],
+          ["barco","submarino"],
+          ["bicicleta","patinete"],
+          ["autobús","tranvía"]
+        ],
+        objects: [
+          ["mesa","silla"],
+          ["reloj","calendario"],
+          ["llave","candado"],
+          ["vaso","taza"],
+          ["lámpara","linterna"],
+          ["cuaderno","libro"]
+        ],
+        places: [
+          ["playa","montaña"],
+          ["museo","biblioteca"],
+          ["hospital","farmacia"],
+          ["aeropuerto","estación"],
+          ["restaurante","cafetería"],
+          ["parque","plaza"]
+        ],
+        clothes: [
+          ["camisa","chaqueta"],
+          ["zapato","sandalia"],
+          ["sombrero","gorra"],
+          ["bufanda","guante"],
+          ["pantalón","falda"],
+          ["anillo","pulsera"]
+        ],
+        nature: [
+          ["lluvia","nieve"],
+          ["río","lago"],
+          ["bosque","selva"],
+          ["trueno","relámpago"],
+          ["sol","luna"],
+          ["arena","roca"]
+        ],
+        tools: [
+          ["martillo","destornillador"],
+          ["cuchara","tenedor"],
+          ["sierra","lima"],
+          ["taladro","llave inglesa"],
+          ["tijeras","cúter"],
+          ["escoba","fregona"]
+        ],
+        abstract: [
+          ["justicia","ley"],
+          ["azar","suerte"],
+          ["promesa","juramento"],
+          ["secreto","mentira"],
+          ["memoria","recuerdo"],
+          ["paz","calma"]
+        ],
+        body: [
+          ["codo","rodilla"],
+          ["pestaña","ceja"],
+          ["tobillo","muñeca"],
+          ["garganta","lengua"],
+          ["columna","costilla"],
+          ["pulgar","índice"]
+        ],
+        tech: [
+          ["dron","cámara"],
+          ["consola","ordenador"],
+          ["auriculares","altavoz"],
+          ["impresora","escáner"],
+          ["app","web"],
+          ["teclado","ratón"]
+        ],
+        senses: [
+          ["olfato","gusto"],
+          ["tacto","visión"],
+          ["sonido","silencio"],
+          ["olor","perfume"],
+          ["frío","calor"],
+          ["brillo","sombra"]
+        ]
+      },
+      en: {
+        sports: [
+          ["soccer","basketball"],
+          ["tennis","padel"],
+          ["volleyball","handball"],
+          ["swimming","athletics"],
+          ["boxing","judo"],
+          ["cycling","motorsport"]
+        ],
+        countries: [
+          ["Spain","Italy"],
+          ["France","Portugal"],
+          ["Mexico","Argentina"],
+          ["Japan","Korea"],
+          ["Brazil","Colombia"],
+          ["Egypt","Morocco"]
+        ],
+        languages: [
+          ["Spanish","Italian"],
+          ["English","German"],
+          ["French","Portuguese"],
+          ["Arabic","Hebrew"],
+          ["Japanese","Chinese"],
+          ["Catalan","Galician"]
+        ],
+        foods: [
+          ["pizza","burger"],
+          ["sushi","ramen"],
+          ["paella","risotto"],
+          ["salad","soup"],
+          ["taco","burrito"],
+          ["croquette","dumpling"]
+        ],
+        animals: [
+          ["dog","cat"],
+          ["lion","tiger"],
+          ["horse","donkey"],
+          ["dolphin","shark"],
+          ["eagle","falcon"],
+          ["sheep","goat"]
+        ],
+        jobs: [
+          ["doctor","nurse"],
+          ["police officer","firefighter"],
+          ["teacher","lawyer"],
+          ["chef","waiter"],
+          ["architect","engineer"],
+          ["dentist","veterinarian"]
+        ],
+        fruits: [
+          ["apple","pear"],
+          ["banana","mango"],
+          ["grape","cherry"],
+          ["orange","tangerine"],
+          ["watermelon","melon"],
+          ["kiwi","pineapple"]
+        ],
+        transport: [
+          ["car","motorbike"],
+          ["train","subway"],
+          ["plane","helicopter"],
+          ["boat","submarine"],
+          ["bicycle","scooter"],
+          ["bus","tram"]
+        ],
+        objects: [
+          ["table","chair"],
+          ["clock","calendar"],
+          ["key","lock"],
+          ["glass","cup"],
+          ["lamp","flashlight"],
+          ["notebook","book"]
+        ],
+        places: [
+          ["beach","mountain"],
+          ["museum","library"],
+          ["hospital","pharmacy"],
+          ["airport","station"],
+          ["restaurant","cafe"],
+          ["park","square"]
+        ],
+        clothes: [
+          ["shirt","jacket"],
+          ["shoe","sandal"],
+          ["hat","cap"],
+          ["scarf","glove"],
+          ["trousers","skirt"],
+          ["ring","bracelet"]
+        ],
+        nature: [
+          ["rain","snow"],
+          ["river","lake"],
+          ["forest","jungle"],
+          ["thunder","lightning"],
+          ["sun","moon"],
+          ["sand","rock"]
+        ],
+        tools: [
+          ["hammer","screwdriver"],
+          ["spoon","fork"],
+          ["saw","file"],
+          ["drill","wrench"],
+          ["scissors","cutter"],
+          ["broom","mop"]
+        ],
+        abstract: [
+          ["justice","law"],
+          ["chance","luck"],
+          ["promise","oath"],
+          ["secret","lie"],
+          ["memory","remembrance"],
+          ["peace","calm"]
+        ],
+        body: [
+          ["elbow","knee"],
+          ["eyelash","eyebrow"],
+          ["ankle","wrist"],
+          ["throat","tongue"],
+          ["spine","rib"],
+          ["thumb","index finger"]
+        ],
+        tech: [
+          ["drone","camera"],
+          ["console","computer"],
+          ["headphones","speaker"],
+          ["printer","scanner"],
+          ["app","website"],
+          ["keyboard","mouse"]
+        ],
+        senses: [
+          ["smell","taste"],
+          ["touch","vision"],
+          ["sound","silence"],
+          ["odor","perfume"],
+          ["cold","heat"],
+          ["brightness","shadow"]
+        ]
+      }
+    };
+
+    /***********************
+     * ESTADO
+     ***********************/
+    let currentRoom = null;
+    let currentPlayer = null;
+    let roomPoll = null;
+    let countdownPoll = null;
+
+    const el = (id) => document.getElementById(id);
+
+    function show(screenId){
+      ["screen-auth","screen-home","screen-lobby","screen-game"].forEach(id => {
+        el(id).classList.add("hidden");
+      });
+      el(screenId).classList.remove("hidden");
+    }
+
+    function setText(id, value){
+      el(id).textContent = value;
+    }
+
+    function showError(targetId, msg){
+      const node = el(targetId);
+      node.textContent = msg;
+      node.classList.remove("hidden");
+    }
+
+    function hideError(targetId){
+      el(targetId).classList.add("hidden");
+      el(targetId).textContent = "";
+    }
+
+    function normalizeName(name){
+      return (name || "").trim().replace(/\s+/g, " ").slice(0,20);
+    }
+
+    function makeRoomCode(){
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let out = "";
+      for(let i=0;i<6;i++){
+        out += chars[Math.floor(Math.random()*chars.length)];
+      }
+      return out;
+    }
+
+    function shuffle(arr){
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function getThemeLabel(theme){
+      const labels = {
+        random:"Random",
+        sports:"Deportes",
+        countries:"Países",
+        languages:"Idiomas",
+        foods:"Comidas",
+        animals:"Animales",
+        jobs:"Profesiones",
+        fruits:"Frutas",
+        transport:"Transportes",
+        objects:"Objetos cotidianos",
+        places:"Lugares y espacios",
+        clothes:"Ropa y accesorios",
+        nature:"Elementos naturales y clima",
+        tools:"Herramientas y utensilios",
+        abstract:"Conceptos abstractos",
+        body:"Partes del cuerpo",
+        tech:"Tecnología",
+        senses:"Sentidos y percepciones"
+      };
+      return labels[theme] || theme;
+    }
+
+    function getLangLabel(lang){
+      return lang === "en" ? "English" : "Español";
+    }
+
+    function getDeadlinePlus3MinutesISO(){
+      return new Date(Date.now() + 3 * 60 * 1000).toISOString();
+    }
+
+    function secondsRemaining(deadlineIso){
+      const diff = new Date(deadlineIso).getTime() - Date.now();
+      return Math.max(0, Math.floor(diff / 1000));
+    }
+
+    function pickWordPair(theme, language){
+      const langPack = WORDS[language];
+      let themeToUse = theme;
+
+      if(theme === "random"){
+        const available = Object.keys(langPack);
+        themeToUse = available[Math.floor(Math.random() * available.length)];
+      }
+
+      const pairs = langPack[themeToUse];
+      const pair = pairs[Math.floor(Math.random() * pairs.length)];
+
+      return { themeUsed: themeToUse, pair };
+    }
+
+    async function getRoom(roomCode){
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("*")
+        .eq("id", roomCode)
+        .maybeSingle();
+
+      if(error) throw error;
+      return data;
+    }
+
+    async function getPlayers(roomCode){
+      const { data, error } = await supabase
+        .from("players")
+        .select("*")
+        .eq("room_id", roomCode)
+        .order("joined_at", { ascending: true });
+
+      if(error) throw error;
+      return data || [];
+    }
+
+    async function createRoom(){
+      hideError("homeError");
+
+      const hostName = normalizeName(el("hostName").value);
+      const language = el("hostLanguage").value;
+      const theme = el("hostTheme").value;
+
+      if(!hostName){
+        showError("homeError","Escribe tu nombre para crear la sala.");
+        return;
+      }
+
+      let roomCode = "";
+      let created = false;
+
+      for(let i=0;i<8 && !created;i++){
+        roomCode = makeRoomCode();
+        const existing = await getRoom(roomCode);
+        if(!existing){
+          const { error: roomError } = await supabase.from("rooms").insert({
+            id: roomCode,
+            host_name: hostName,
+            language,
+            theme,
+            status: "lobby",
+            join_deadline: getDeadlinePlus3MinutesISO(),
+            common_word: null,
+            liar_word: null,
+            theme_used: null
+          });
+
+          if(roomError) throw roomError;
+
+          const { data: insertedPlayer, error: playerError } = await supabase
+            .from("players")
+            .insert({
+              room_id: roomCode,
+              name: hostName,
+              is_host: true,
+              word: null,
+              is_liar: false
+            })
+            .select()
+            .single();
+
+          if(playerError) throw playerError;
+
+          currentRoom = roomCode;
+          currentPlayer = insertedPlayer;
+          created = true;
+        }
+      }
+
+      if(!created){
+        showError("homeError","No se pudo crear la sala. Inténtalo otra vez.");
+        return;
+      }
+
+      openLobby();
+    }
+
+    async function joinRoom(){
+      hideError("homeError");
+
+      const name = normalizeName(el("joinName").value);
+      const roomCode = (el("joinRoomCode").value || "").trim().toUpperCase();
+
+      if(!name){
+        showError("homeError","Escribe tu nombre para entrar.");
+        return;
+      }
+
+      if(!roomCode){
+        showError("homeError","Introduce el código de sala.");
+        return;
+      }
+
+      const room = await getRoom(roomCode);
+
+      if(!room){
+        showError("homeError","No existe una sala con ese código.");
+        return;
+      }
+
+      if(room.status !== "lobby"){
+        showError("homeError","La partida ya ha empezado o la sala ya no admite jugadores.");
+        return;
+      }
+
+      if(secondsRemaining(room.join_deadline) <= 0){
+        showError("homeError","La ventana de unión de 3 minutos ya terminó.");
+        return;
+      }
+
+      const players = await getPlayers(roomCode);
+      const duplicate = players.find(p => p.name.toLowerCase() === name.toLowerCase());
+
+      if(duplicate){
+        showError("homeError","Ya hay un jugador con ese nombre en la sala. Usa otro.");
+        return;
+      }
+
+      const { data: insertedPlayer, error } = await supabase
+        .from("players")
+        .insert({
+          room_id: roomCode,
+          name,
+          is_host: false,
+          word: null,
+          is_liar: false
+        })
+        .select()
+        .single();
+
+      if(error) throw error;
+
+      currentRoom = roomCode;
+      currentPlayer = insertedPlayer;
+
+      openLobby();
+    }
+
+    async function renderLobby(){
+      const room = await getRoom(currentRoom);
+      if(!room){
+        stopLobbyPolling();
+        show("screen-home");
+        return;
+      }
+
+      setText("roomCodeLabel", room.id);
+      setText("roomThemeTag", `Tema: ${getThemeLabel(room.theme)}`);
+      setText("roomLangTag", `Idioma: ${getLangLabel(room.language)}`);
+      setText("roomHostTag", `Host: ${room.host_name}`);
+
+      const players = await getPlayers(currentRoom);
+      el("playersList").innerHTML = players.map(p => `
+        <div class="player">
+          <div>
+            <strong>${escapeHtml(p.name)}</strong>
+            ${p.is_host ? '<span class="muted"> · host</span>' : ''}
+          </div>
+          <div class="muted">${p.word ? "listo" : "esperando"}</div>
+        </div>
+      `).join("");
+
+      const secs = secondsRemaining(room.join_deadline);
+      setText("lobbyTimer", String(secs));
+
+      const isHost = currentPlayer?.is_host === true;
+
+      el("btnStartGame").disabled = !isHost || players.length < 3;
+      el("btnStartGame").textContent = isHost ? "Empezar partida" : "Solo el host puede empezar";
+
+      let info = "";
+      if(players.length < 3){
+        info = "Necesitáis al menos 3 jugadores para empezar.";
+      } else if(isHost){
+        info = "Puedes empezar ya o esperar a que termine el tiempo.";
+      } else {
+        info = "Esperando a que el host inicie la partida.";
+      }
+
+      if(secs <= 0 && room.status === "lobby"){
+        if(isHost && players.length >= 3){
+          info = "El tiempo terminó. Iniciando partida...";
+          setText("lobbyInfo", info);
+          await startGame();
+          return;
+        } else if(players.length < 3){
+          info = "El tiempo terminó, pero no hay suficientes jugadores. El host debe crear una sala nueva.";
+        }
+      }
+
+      setText("lobbyInfo", info);
+
+      if(room.status === "started"){
+        stopLobbyPolling();
+        await openGame();
+      }
+    }
+
+    function startLobbyPolling(){
+      stopLobbyPolling();
+      renderLobby();
+      roomPoll = setInterval(renderLobby, 2000);
+      countdownPoll = setInterval(async () => {
+        const room = await getRoom(currentRoom);
+        if(!room) return;
+        setText("lobbyTimer", String(secondsRemaining(room.join_deadline)));
+      }, 1000);
+    }
+
+    function stopLobbyPolling(){
+      if(roomPoll) clearInterval(roomPoll);
+      if(countdownPoll) clearInterval(countdownPoll);
+      roomPoll = null;
+      countdownPoll = null;
+    }
+
+    async function openLobby(){
+      show("screen-lobby");
+      await renderLobby();
+      startLobbyPolling();
+    }
+
+    async function startGame(){
+      const room = await getRoom(currentRoom);
+      const players = await getPlayers(currentRoom);
+
+      if(!currentPlayer?.is_host) return alert("Solo el host puede iniciar la partida.");
+      if(!room || room.status !== "lobby") return;
+      if(players.length < 3) return alert("Se necesitan al menos 3 jugadores.");
+
+      const { themeUsed, pair } = pickWordPair(room.theme, room.language);
+      const liarIndex = Math.floor(Math.random() * players.length);
+
+      for(let i = 0; i < players.length; i++){
+        const player = players[i];
+        const assignedWord = i === liarIndex ? pair[1] : pair[0];
+        const isLiar = i === liarIndex;
+
+        const { error } = await supabase
+          .from("players")
+          .update({
+            word: assignedWord,
+            is_liar: isLiar
+          })
+          .eq("id", player.id);
+
+        if(error) throw error;
+      }
+
+      const { error: roomError } = await supabase
+        .from("rooms")
+        .update({
+          status: "started",
+          common_word: pair[0],
+          liar_word: pair[1],
+          theme_used: themeUsed
+        })
+        .eq("id", currentRoom);
+
+      if(roomError) throw roomError;
+
+      stopLobbyPolling();
+      await openGame();
+    }
+
+    async function openGame(){
+      show("screen-game");
+
+      const { data, error } = await supabase
+        .from("players")
+        .select("*")
+        .eq("id", currentPlayer.id)
+        .single();
+
+      if(error) throw error;
+
+      currentPlayer = data;
+      el("myWordBox").textContent = "•••••";
+      el("btnRevealWord").onclick = () => {
+        el("myWordBox").textContent = currentPlayer.word || "(sin palabra)";
+      };
+      el("btnHideWord").onclick = () => {
+        el("myWordBox").textContent = "•••••";
+      };
+    }
+
+    async function leaveRoom(){
+      if(currentPlayer?.id){
+        await supabase.from("players").delete().eq("id", currentPlayer.id);
+      }
+
+      stopLobbyPolling();
+      currentRoom = null;
+      currentPlayer = null;
+      show("screen-home");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /***********************
+     * EVENTOS
+     ***********************/
+    el("btnAccess").addEventListener("click", () => {
+      hideError("authError");
+      const entered = el("accessPassword").value;
+      if(entered !== ACCESS_PASSWORD){
+        showError("authError", "Clave incorrecta.");
+        return;
+      }
+      show("screen-home");
+    });
+
+    el("btnCreateRoom").addEventListener("click", async () => {
+      try {
+        await createRoom();
+      } catch (err) {
+        console.error(err);
+        showError("homeError", "No se pudo crear la sala. Revisa la configuración de Supabase.");
+      }
+    });
+
+    el("btnJoinRoom").addEventListener("click", async () => {
+      try {
+        await joinRoom();
+      } catch (err) {
+        console.error(err);
+        showError("homeError", "No se pudo entrar en la sala. Revisa el código o la configuración.");
+      }
+    });
+
+    el("btnStartGame").addEventListener("click", async () => {
+      try {
+        await startGame();
+      } catch (err) {
+        console.error(err);
+        alert("No se pudo iniciar la partida.");
+      }
+    });
+
+    el("btnLeaveRoom").addEventListener("click", async () => {
+      try {
+        await leaveRoom();
+      } catch (err) {
+        console.error(err);
+        show("screen-home");
+      }
+    });
+  </script>
+</body>
+</html>
